@@ -97,7 +97,7 @@ self.addEventListener("message", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(clients.claim());
+  event.waitUntil(self.clients.claim());
   const cacheName = `PWA-Template-${getFullVersion()}`;
   const cacheWhitelist = [cacheName];
   event.waitUntil(

@@ -3,15 +3,15 @@ import UpdateNotification from "./UpdateNotification";
 
 function UpdateHandler() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [registration, setRegistration] = useState(null);
 
   useEffect(() => {
     const handleUpdateAvailable = (event) => {
-      if (event.data && event.data.type === "UPDATE_AVAILABLE") {
-        setUpdateAvailable(true);
-      }
+      setUpdateAvailable(true);
+      setRegistration(event.detail);
     };
 
-    navigator.serviceWorker.addEventListener("message", handleUpdateAvailable);
+    window.addEventListener("updateAvailable", handleUpdateAvailable);
 
     // Check for updates when the component mounts
     if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
@@ -21,21 +21,18 @@ function UpdateHandler() {
     }
 
     return () => {
-      navigator.serviceWorker.removeEventListener(
-        "message",
-        handleUpdateAvailable
-      );
+      window.removeEventListener("updateAvailable", handleUpdateAvailable);
     };
   }, []);
 
   const applyUpdate = () => {
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.ready.then((registration) => {
-        if (registration.waiting) {
-          registration.waiting.postMessage({ type: "SKIP_WAITING" });
-        }
-      });
+    if (registration && registration.waiting) {
+      registration.waiting.postMessage({ type: "SKIP_WAITING" });
     }
+  };
+
+  const dismissUpdate = () => {
+    setUpdateAvailable(false);
   };
 
   useEffect(() => {
@@ -64,6 +61,7 @@ function UpdateHandler() {
     <UpdateNotification
       updateAvailable={updateAvailable}
       onUpdate={applyUpdate}
+      onDismiss={dismissUpdate}
     />
   );
 }

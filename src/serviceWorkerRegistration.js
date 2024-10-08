@@ -18,6 +18,12 @@ export function register(config) {
 
       if (isLocalhost) {
         checkValidServiceWorker(swUrl, config);
+        navigator.serviceWorker.ready.then(() => {
+          console.log(
+            "This web app is being served cache-first by a service " +
+              "worker. To learn more, visit https://cra.link/PWA"
+          );
+        });
       } else {
         registerValidSW(swUrl, config);
       }
@@ -47,9 +53,10 @@ function registerValidSW(swUrl, config) {
         installingWorker.onstatechange = () => {
           if (installingWorker.state === "installed") {
             if (navigator.serviceWorker.controller) {
-              // New content is available; please refresh.
               console.log("New content is available; please refresh.");
-              const event = new Event("updateAvailable");
+              const event = new CustomEvent("updateAvailable", {
+                detail: registration,
+              });
               window.dispatchEvent(event);
             } else {
               console.log("Content is cached for offline use.");
@@ -60,7 +67,6 @@ function registerValidSW(swUrl, config) {
           }
         };
       };
-      checkForUpdates();
     })
     .catch((error) => {
       console.error("Error during service worker registration:", error);
@@ -71,9 +77,6 @@ function checkForUpdates() {
   if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
     navigator.serviceWorker.controller.postMessage({
       type: "CHECK_FOR_UPDATES",
-    });
-    navigator.serviceWorker.ready.then((registration) => {
-      registration.update();
     });
   }
 }

@@ -28,16 +28,15 @@ export function register(config) {
       }
     });
 
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (!refreshing) {
-        refreshing = true;
-        window.location.reload();
+    // Check for updates when the page becomes visible
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) {
+        checkForUpdates();
       }
     });
 
-    // Check for updates more frequently
-    setInterval(() => checkForUpdates(true), 60000); // Check every minute
+    // Check for updates when the window gains focus
+    window.addEventListener("focus", checkForUpdates);
   }
 }
 
@@ -55,7 +54,7 @@ function registerValidSW(swUrl, config) {
             if (navigator.serviceWorker.controller) {
               console.log("New content is available");
               const event = new CustomEvent("updateAvailable", {
-                detail: { registration, immediate: false },
+                detail: registration,
               });
               window.dispatchEvent(event);
             } else {
@@ -67,18 +66,16 @@ function registerValidSW(swUrl, config) {
           }
         };
       };
-      checkForUpdates(false);
     })
     .catch((error) => {
       console.error("Error during service worker registration:", error);
     });
 }
 
-function checkForUpdates(immediate) {
+function checkForUpdates() {
   if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
     navigator.serviceWorker.controller.postMessage({
       type: "CHECK_FOR_UPDATES",
-      immediate: immediate,
     });
   }
 }

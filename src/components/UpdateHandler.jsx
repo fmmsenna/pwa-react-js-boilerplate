@@ -3,61 +3,75 @@ import UpdateNotification from "./UpdateNotification";
 
 function UpdateHandler() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
-  const [isImmediateUpdate, setIsImmediateUpdate] = useState(false);
-  const [registration, setRegistration] = useState(null);
 
   useEffect(() => {
-    const handleUpdateAvailable = (event) => {
+    const handleUpdateAvailable = () => {
       setUpdateAvailable(true);
-      setIsImmediateUpdate(event.detail.immediate);
-      setRegistration(event.detail.registration);
     };
 
-    window.addEventListener("updateAvailable", handleUpdateAvailable);
+    navigator.serviceWorker.addEventListener("message", (event) => {
+      if (event.data && event.data.type === "UPDATE_AVAILABLE") {
+        handleUpdateAvailable();
+      }
+    });
 
-    // Check for updates when the component mounts
-    if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
-      navigator.serviceWorker.controller.postMessage({
-        type: "CHECK_FOR_UPDATES",
-        immediate: true,
-      });
-    }
-
-    // Check for updates when the page becomes visible
-    document.addEventListener("visibilitychange", () => {
-      if (
-        !document.hidden &&
-        "serviceWorker" in navigator &&
-        navigator.serviceWorker.controller
-      ) {
+    // Check for updates when the component mounts or the page becomes visible
+    const checkForUpdates = () => {
+      if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
         navigator.serviceWorker.controller.postMessage({
           type: "CHECK_FOR_UPDATES",
-          immediate: true,
         });
+      }
+    };
+
+    checkForUpdates();
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) {
+        checkForUpdates();
       }
     });
 
     return () => {
-      window.removeEventListener("updateAvailable", handleUpdateAvailable);
+      document.removeEventListener("visibilitychange", checkForUpdates);
     };
   }, []);
 
   const applyUpdate = () => {
-    if (registration && registration.waiting) {
-      registration.waiting.postMessage({ type: "SKIP_WAITING" });
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.ready.then((registration) => {
+        if (registration.waiting) {
+          registration.waiting.postMessage({ type: "SKIP_WAITING" });
+        }
+      });
     }
   };
 
-  const dismissUpdate = () => {
-    setUpdateAvailable(false);
-  };
+  useEffect(() => {
+    const handleControllerChange = () => {
+      window.location.reload();
+    };
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.addEventListener(
+        "controllerchange",
+        handleControllerChange
+      );
+    }
+
+    return () => {
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.removeEventListener(
+          "controllerchange",
+          handleControllerChange
+        );
+      }
+    };
+  }, []);
 
   return (
     <UpdateNotification
       updateAvailable={updateAvailable}
-      isImmediateUpdate={isImmediateUpdate}
       onUpdate={applyUpdate}
-      onDismiss={dismissUpdate}
     />
   );
 }

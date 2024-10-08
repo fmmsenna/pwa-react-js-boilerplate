@@ -90,12 +90,11 @@ self.addEventListener("message", (event) => {
   if (event.data && event.data.type === "SKIP_WAITING") {
     self.skipWaiting();
   } else if (event.data && event.data.type === "CHECK_FOR_UPDATES") {
-    checkForUpdates(event.data.immediate);
+    checkForUpdates();
   }
 });
 
 self.addEventListener("install", (event) => {
-  self.skipWaiting();
   event.waitUntil(
     caches.open(cacheName).then((cache) => {
       return cache.addAll([
@@ -127,18 +126,14 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-function checkForUpdates(immediate) {
-  if (immediate) {
-    self.registration.update().then(() => {
-      if (self.registration.waiting) {
-        self.clients.matchAll().then((clients) => {
-          clients.forEach((client) =>
-            client.postMessage({ type: "UPDATE_AVAILABLE", immediate: true })
-          );
-        });
-      }
-    });
-  } else {
-    self.registration.update();
-  }
+function checkForUpdates() {
+  self.registration.update().then(() => {
+    if (self.registration.waiting) {
+      self.clients.matchAll().then((clients) => {
+        clients.forEach((client) =>
+          client.postMessage({ type: "UPDATE_AVAILABLE" })
+        );
+      });
+    }
+  });
 }

@@ -8,6 +8,7 @@ function Site() {
     <div>
       <h1>This is a PWA template. Hack away! 🔥</h1>
       <button onClick={() => navigate("/welcome")}>Buy now!</button>
+      <small>Made in BR</small>
     </div>
   );
 }

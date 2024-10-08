@@ -87,6 +87,21 @@ registerRoute(
 self.addEventListener("message", (event) => {
   if (event.data && event.data.type === "SKIP_WAITING") {
     self.skipWaiting();
+  } else if (event.data && event.data.type === "CHECK_FOR_UPDATES") {
+    self.registration.update();
+  } else if (event.data && event.data.type === "PRECACHE_UPDATE") {
+    // Perform pre-caching of update here
+    // This is a simplified version. In a real-world scenario,
+    // you'd want to cache new assets without disrupting current ones.
+    self.registration.update().then(() => {
+      self.clients.matchAll().then((clients) => {
+        clients.forEach((client) =>
+          client.postMessage({ type: "UPDATE_PRECACHED" })
+        );
+      });
+    });
+  } else if (event.data && event.data.type === "APPLY_UPDATE") {
+    self.skipWaiting();
   }
 });
 
@@ -122,4 +137,14 @@ self.addEventListener("install", (event) => {
       ]);
     })
   );
+});
+
+// Add this to handle automatic updates on new app launch
+self.addEventListener("controllerchange", () => {
+  if (self.clients.claim) {
+    self.clients.claim();
+    self.clients.matchAll().then((clients) => {
+      clients.forEach((client) => client.navigate(client.url));
+    });
+  }
 });

@@ -6,7 +6,7 @@ const path = require("path");
 const baseDir = process.cwd();
 
 // Import the version from version.js
-let VERSION, RELEASE_TYPE, BUILD_NUMBER, getFullVersion, getNpmVersion;
+let VERSION, RELEASE_TYPE, BUILD_NUMBER;
 
 async function importVersion() {
   const versionPath = path.join(baseDir, "src", "version.js");
@@ -16,10 +16,10 @@ async function importVersion() {
   VERSION = versionContent.match(/VERSION\s*=\s*"([^"]+)"/)?.[1];
   RELEASE_TYPE = versionContent.match(/RELEASE_TYPE\s*=\s*"([^"]+)"/)?.[1];
   BUILD_NUMBER = versionContent.match(/BUILD_NUMBER\s*=\s*"([^"]+)"/)?.[1];
+}
 
-  // Define functions based on extracted values
-  getFullVersion = () => `${RELEASE_TYPE}-${VERSION}.${BUILD_NUMBER}`;
-  getNpmVersion = () => `${VERSION}-${RELEASE_TYPE}.${BUILD_NUMBER}`;
+function getVersionString() {
+  return `${VERSION}-${RELEASE_TYPE}.${BUILD_NUMBER}`;
 }
 
 async function updateFile(filePath, updateFn) {
@@ -41,25 +41,26 @@ async function updateFiles() {
     const packagePath = path.join(baseDir, "package.json");
     const packageLockPath = path.join(baseDir, "package-lock.json");
 
+    const versionString = getVersionString();
+
     await updateFile(manifestPath, (manifest) => {
-      manifest.version = getFullVersion();
-      manifest.short_name = `${manifest.short_name.split(" ")[0]} ${VERSION}`;
-      manifest.name = `${manifest.name.split(" ")[0]} ${RELEASE_TYPE}`;
+      manifest.version = versionString;
+      // Do not modify short_name and name
       return manifest;
     });
 
     await updateFile(packagePath, (packageJson) => {
-      packageJson.version = getNpmVersion();
+      packageJson.version = versionString;
       return packageJson;
     });
 
     await updateFile(packageLockPath, (packageLockJson) => {
-      packageLockJson.version = getNpmVersion();
+      packageLockJson.version = versionString;
       return packageLockJson;
     });
 
     console.log(
-      `All version-related files have been updated to version ${VERSION}, build ${BUILD_NUMBER}, release type ${RELEASE_TYPE}.`
+      `All version-related files have been updated to version ${versionString}.`
     );
   } catch (error) {
     console.error("Error updating version files:", error);

@@ -8,6 +8,7 @@ import {
 
 import Site from "./pages/Site";
 import Welcome from "./pages/Welcome";
+import UpdateHandler from "./components/UpdateHandler";
 
 const appRouter = createBrowserRouter(
   createRoutesFromElements(
@@ -22,6 +23,7 @@ function App() {
   return (
     <div>
       <RouterProvider router={appRouter} />
+      <UpdateHandler />
     </div>
   );
 }

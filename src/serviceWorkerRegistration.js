@@ -20,6 +20,8 @@ const isLocalhost = Boolean(
     )
 );
 
+let refreshing = false;
+
 export function register(config) {
   if (process.env.NODE_ENV === "production" && "serviceWorker" in navigator) {
     // The URL constructor is available in all browsers that support SW.
@@ -51,6 +53,14 @@ export function register(config) {
         registerValidSW(swUrl, config);
       }
     });
+
+    // Add event listeners for focus and visibilitychange
+    window.addEventListener("focus", checkForUpdates);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) {
+        checkForUpdates();
+      }
+    });
   }
 }
 
@@ -74,34 +84,37 @@ function registerValidSW(swUrl, config) {
                   "tabs for this page are closed. See https://cra.link/PWA."
               );
 
-              // Forcing a reload:
-              window.location.reload();
-
-              // Execute callback
-              if (config && config.onUpdate) {
-                config.onUpdate(registration);
-              }
+              // Immediately update the service worker
+              registration.waiting.postMessage({ type: "SKIP_WAITING" });
             } else {
               // At this point, everything has been precached.
               // It's the perfect time to display a
               // "Content is cached for offline use." message.
               console.log("Content is cached for offline use.");
-
-              // Execute callback
-              if (config && config.onSuccess) {
-                config.onSuccess(registration);
-              }
             }
           }
         };
       };
-      // Trigger an update check immediately after registration
-      registration.update();
     })
     .catch((error) => {
       console.error("Error during service worker registration:", error);
     });
 }
+
+function checkForUpdates() {
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.ready.then((registration) => {
+      registration.update();
+    });
+  }
+}
+
+navigator.serviceWorker.addEventListener("controllerchange", () => {
+  if (!refreshing) {
+    refreshing = true;
+    window.location.reload();
+  }
+});
 
 function checkValidServiceWorker(swUrl, config) {
   // Check if the service worker can be found. If it can't reload the page.

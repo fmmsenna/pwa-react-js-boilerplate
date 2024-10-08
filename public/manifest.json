@@ -1,6 +1,7 @@
 {
   "short_name": "PWA TEMPLATE",
   "name": "PWA TEMPLATE",
+  "version": "0.1.0",
   "icons": [
     {
       "src": "favicon.ico",

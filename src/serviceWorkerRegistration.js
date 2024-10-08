@@ -20,8 +20,7 @@ export function register(config) {
         checkValidServiceWorker(swUrl, config);
         navigator.serviceWorker.ready.then(() => {
           console.log(
-            "This web app is being served cache-first by a service " +
-              "worker. To learn more, visit https://cra.link/PWA"
+            "This web app is being served cache-first by a service worker."
           );
         });
       } else {
@@ -29,15 +28,16 @@ export function register(config) {
       }
     });
 
-    // Check for updates when the page becomes visible
-    document.addEventListener("visibilitychange", () => {
-      if (!document.hidden) {
-        checkForUpdates();
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (!refreshing) {
+        refreshing = true;
+        window.location.reload();
       }
     });
 
-    // Check for updates when the window gains focus
-    window.addEventListener("focus", checkForUpdates);
+    // Check for updates more frequently
+    setInterval(() => checkForUpdates(true), 60000); // Check every minute
   }
 }
 
@@ -53,9 +53,9 @@ function registerValidSW(swUrl, config) {
         installingWorker.onstatechange = () => {
           if (installingWorker.state === "installed") {
             if (navigator.serviceWorker.controller) {
-              console.log("New content is available; please refresh.");
+              console.log("New content is available");
               const event = new CustomEvent("updateAvailable", {
-                detail: registration,
+                detail: { registration, immediate: false },
               });
               window.dispatchEvent(event);
             } else {
@@ -67,16 +67,18 @@ function registerValidSW(swUrl, config) {
           }
         };
       };
+      checkForUpdates(false);
     })
     .catch((error) => {
       console.error("Error during service worker registration:", error);
     });
 }
 
-function checkForUpdates() {
+function checkForUpdates(immediate) {
   if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
     navigator.serviceWorker.controller.postMessage({
       type: "CHECK_FOR_UPDATES",
+      immediate: immediate,
     });
   }
 }

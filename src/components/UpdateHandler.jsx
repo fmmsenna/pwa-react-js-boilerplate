@@ -3,12 +3,14 @@ import UpdateNotification from "./UpdateNotification";
 
 function UpdateHandler() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [isImmediateUpdate, setIsImmediateUpdate] = useState(false);
   const [registration, setRegistration] = useState(null);
 
   useEffect(() => {
     const handleUpdateAvailable = (event) => {
       setUpdateAvailable(true);
-      setRegistration(event.detail);
+      setIsImmediateUpdate(event.detail.immediate);
+      setRegistration(event.detail.registration);
     };
 
     window.addEventListener("updateAvailable", handleUpdateAvailable);
@@ -17,8 +19,23 @@ function UpdateHandler() {
     if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
       navigator.serviceWorker.controller.postMessage({
         type: "CHECK_FOR_UPDATES",
+        immediate: true,
       });
     }
+
+    // Check for updates when the page becomes visible
+    document.addEventListener("visibilitychange", () => {
+      if (
+        !document.hidden &&
+        "serviceWorker" in navigator &&
+        navigator.serviceWorker.controller
+      ) {
+        navigator.serviceWorker.controller.postMessage({
+          type: "CHECK_FOR_UPDATES",
+          immediate: true,
+        });
+      }
+    });
 
     return () => {
       window.removeEventListener("updateAvailable", handleUpdateAvailable);
@@ -35,31 +52,10 @@ function UpdateHandler() {
     setUpdateAvailable(false);
   };
 
-  useEffect(() => {
-    const handleControllerChange = () => {
-      window.location.reload();
-    };
-
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.addEventListener(
-        "controllerchange",
-        handleControllerChange
-      );
-    }
-
-    return () => {
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.removeEventListener(
-          "controllerchange",
-          handleControllerChange
-        );
-      }
-    };
-  }, []);
-
   return (
     <UpdateNotification
       updateAvailable={updateAvailable}
+      isImmediateUpdate={isImmediateUpdate}
       onUpdate={applyUpdate}
       onDismiss={dismissUpdate}
     />

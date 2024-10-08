@@ -12,6 +12,7 @@ import { ExpirationPlugin } from "workbox-expiration";
 import { precacheAndRoute, createHandlerBoundToURL } from "workbox-precaching";
 import { registerRoute } from "workbox-routing";
 import { StaleWhileRevalidate } from "workbox-strategies";
+import { getFullVersion } from "./version";
 
 clientsClaim();
 
@@ -71,7 +72,7 @@ self.addEventListener("message", (event) => {
 });
 
 // Any other custom service worker logic can go here.
-const cacheName = "Beta 0.0.1";
+const cacheName = `PWA-Template-${getFullVersion()}`;
 
 // Add fonts and other resources to the cache during installation
 self.addEventListener("install", (event) => {

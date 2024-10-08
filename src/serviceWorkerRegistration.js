@@ -56,7 +56,7 @@ export function register(config) {
 
 function registerValidSW(swUrl, config) {
   navigator.serviceWorker
-    .register(swUrl)
+    .register(swUrl, { updateViaCache: "none" })
     .then((registration) => {
       registration.onupdatefound = () => {
         const installingWorker = registration.installing;
@@ -92,6 +92,8 @@ function registerValidSW(swUrl, config) {
           }
         };
       };
+      // Trigger an update check immediately after registration
+      registration.update();
     })
     .catch((error) => {
       console.error("Error during service worker registration:", error);

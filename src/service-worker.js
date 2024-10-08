@@ -1,4 +1,4 @@
-// service-worker.js
+/* eslint-disable no-restricted-globals */
 
 import { clientsClaim } from "workbox-core";
 import { ExpirationPlugin } from "workbox-expiration";
@@ -91,6 +91,7 @@ self.addEventListener("message", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
+  const cacheName = `PWA-Template-${getFullVersion()}`;
   const cacheWhitelist = [cacheName];
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -99,15 +100,15 @@ self.addEventListener("activate", (event) => {
           if (!cacheWhitelist.includes(name)) {
             return caches.delete(name);
           }
+          return null;
         })
       );
     })
   );
 });
 
-const cacheName = `PWA-Template-${getFullVersion()}`;
-
 self.addEventListener("install", (event) => {
+  const cacheName = `PWA-Template-${getFullVersion()}`;
   event.waitUntil(
     caches.open(cacheName).then((cache) => {
       return cache.addAll([

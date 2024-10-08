@@ -19,7 +19,7 @@ async function importVersion() {
 }
 
 function getVersionString() {
-  return `${VERSION}-${RELEASE_TYPE}.${BUILD_NUMBER}`;
+  return `${RELEASE_TYPE}-${VERSION}.${BUILD_NUMBER}`;
 }
 
 async function updateFile(filePath, updateFn) {

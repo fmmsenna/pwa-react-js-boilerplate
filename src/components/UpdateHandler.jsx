@@ -3,40 +3,57 @@ import UpdateNotification from "./UpdateNotification";
 
 function UpdateHandler() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
-  const [updatePrecached, setUpdatePrecached] = useState(false);
 
   useEffect(() => {
     const handleUpdateAvailable = () => setUpdateAvailable(true);
-    const handleUpdatePrecached = (event) => {
-      if (event.data && event.data.type === "UPDATE_PRECACHED") {
-        setUpdatePrecached(true);
-      }
-    };
 
     window.addEventListener("updateAvailable", handleUpdateAvailable);
-    navigator.serviceWorker.addEventListener("message", handleUpdatePrecached);
+
+    // Check for updates when the component mounts
+    if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({
+        type: "CHECK_FOR_UPDATES",
+      });
+    }
 
     return () => {
       window.removeEventListener("updateAvailable", handleUpdateAvailable);
-      navigator.serviceWorker.removeEventListener(
-        "message",
-        handleUpdatePrecached
-      );
     };
   }, []);
 
   const applyUpdate = () => {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.ready.then((registration) => {
-        registration.waiting.postMessage({ type: "APPLY_UPDATE" });
+        registration.waiting.postMessage({ type: "SKIP_WAITING" });
       });
     }
   };
 
+  useEffect(() => {
+    const handleControllerChange = () => {
+      window.location.reload();
+    };
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.addEventListener(
+        "controllerchange",
+        handleControllerChange
+      );
+    }
+
+    return () => {
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.removeEventListener(
+          "controllerchange",
+          handleControllerChange
+        );
+      }
+    };
+  }, []);
+
   return (
     <UpdateNotification
       updateAvailable={updateAvailable}
-      updatePrecached={updatePrecached}
       onUpdate={applyUpdate}
     />
   );

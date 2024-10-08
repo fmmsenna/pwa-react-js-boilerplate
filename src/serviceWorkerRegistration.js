@@ -1,5 +1,3 @@
-// serviceWorkerRegistration.js
-
 const isLocalhost = Boolean(
   window.location.hostname === "localhost" ||
     window.location.hostname === "[::1]" ||
@@ -7,25 +5,6 @@ const isLocalhost = Boolean(
       /^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/
     )
 );
-
-let updatePrecached = false;
-
-function checkForUpdates() {
-  if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
-    navigator.serviceWorker.controller.postMessage({
-      type: "CHECK_FOR_UPDATES",
-    });
-  }
-}
-
-function handleUpdate(registration) {
-  if (!updatePrecached) {
-    updatePrecached = true;
-    registration.waiting.postMessage({ type: "PRECACHE_UPDATE" });
-  }
-  const event = new Event("updateAvailable");
-  window.dispatchEvent(event);
-}
 
 export function register(config) {
   if (process.env.NODE_ENV === "production" && "serviceWorker" in navigator) {
@@ -39,11 +18,6 @@ export function register(config) {
 
       if (isLocalhost) {
         checkValidServiceWorker(swUrl, config);
-        navigator.serviceWorker.ready.then(() => {
-          console.log(
-            "This web app is being served cache-first by a service worker."
-          );
-        });
       } else {
         registerValidSW(swUrl, config);
       }
@@ -73,10 +47,8 @@ function registerValidSW(swUrl, config) {
         installingWorker.onstatechange = () => {
           if (installingWorker.state === "installed") {
             if (navigator.serviceWorker.controller) {
-              console.log(
-                "New content is available and will be used when all tabs for this page are closed."
-              );
-              handleUpdate(registration);
+              const event = new Event("updateAvailable");
+              window.dispatchEvent(event);
             } else {
               console.log("Content is cached for offline use.");
               if (config && config.onSuccess) {
@@ -86,10 +58,19 @@ function registerValidSW(swUrl, config) {
           }
         };
       };
+      checkForUpdates();
     })
     .catch((error) => {
       console.error("Error during service worker registration:", error);
     });
+}
+
+function checkForUpdates() {
+  if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({
+      type: "CHECK_FOR_UPDATES",
+    });
+  }
 }
 
 function checkValidServiceWorker(swUrl, config) {

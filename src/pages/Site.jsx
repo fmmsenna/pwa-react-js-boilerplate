@@ -6,7 +6,7 @@ function Site() {
 
   return (
     <div>
-      <h1>This is a PWA template. Hack away! 🔥</h1>
+      <h1>This is a PWA template. Hack away! 🔥🔥🔥</h1>
       <button onClick={() => navigate("/welcome")}>Buy now!</button>
     </div>
   );

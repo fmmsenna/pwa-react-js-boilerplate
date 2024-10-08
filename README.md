@@ -22,3 +22,9 @@ This is a template for creating Progressive Web Apps (PWAs) using React and Java
 - Adjust google fonts on index.html and on serviceWorker.js
 - Clean up CSS according to your project styles
 - Adjust manifest.json and package.json files
+
+## Important Files
+
+- \`package.json\`: Lists dependencies and scripts for your project.
+- \`package-lock.json\`: Ensures consistent installs across environments. Do not modify directly.
+- \`public/manifest.json\`: Defines PWA behavior and appearance. Update with your app's details.

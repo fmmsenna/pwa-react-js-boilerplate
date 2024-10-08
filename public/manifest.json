@@ -1,7 +1,7 @@
 {
-  "short_name": "PWA TEMPLATE",
-  "name": "PWA TEMPLATE",
-  "version": "0.1.0",
+  "short_name": "PWA 0.0.1",
+  "name": "PWA beta",
+  "version": "beta-0.0.1.2",
   "icons": [
     {
       "src": "favicon.ico",

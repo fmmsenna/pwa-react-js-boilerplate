@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+node update-version-files.js
+git add package.json package-lock.json public/manifest.json

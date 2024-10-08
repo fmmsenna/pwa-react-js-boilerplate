@@ -47,6 +47,8 @@ function registerValidSW(swUrl, config) {
         installingWorker.onstatechange = () => {
           if (installingWorker.state === "installed") {
             if (navigator.serviceWorker.controller) {
+              // New content is available; please refresh.
+              console.log("New content is available; please refresh.");
               const event = new Event("updateAvailable");
               window.dispatchEvent(event);
             } else {
@@ -69,6 +71,9 @@ function checkForUpdates() {
   if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
     navigator.serviceWorker.controller.postMessage({
       type: "CHECK_FOR_UPDATES",
+    });
+    navigator.serviceWorker.ready.then((registration) => {
+      registration.update();
     });
   }
 }

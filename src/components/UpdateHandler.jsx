@@ -20,19 +20,6 @@ function UpdateHandler() {
       });
     }
 
-    // Check for updates when the page becomes visible
-    document.addEventListener("visibilitychange", () => {
-      if (
-        !document.hidden &&
-        "serviceWorker" in navigator &&
-        navigator.serviceWorker.controller
-      ) {
-        navigator.serviceWorker.controller.postMessage({
-          type: "CHECK_FOR_UPDATES",
-        });
-      }
-    });
-
     return () => {
       navigator.serviceWorker.removeEventListener(
         "message",

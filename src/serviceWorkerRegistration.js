@@ -56,7 +56,7 @@ export function register(config) {
 
 function registerValidSW(swUrl, config) {
   navigator.serviceWorker
-    .register(swUrl, { updateViaCache: "none" })
+    .register(swUrl)
     .then((registration) => {
       registration.onupdatefound = () => {
         const installingWorker = registration.installing;
@@ -73,6 +73,9 @@ function registerValidSW(swUrl, config) {
                 "New content is available and will be used when all " +
                   "tabs for this page are closed. See https://cra.link/PWA."
               );
+
+              // Forcing a reload:
+              window.location.reload();
 
               // Execute callback
               if (config && config.onUpdate) {

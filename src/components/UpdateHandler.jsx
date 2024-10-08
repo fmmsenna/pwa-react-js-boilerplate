@@ -5,9 +5,13 @@ function UpdateHandler() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
 
   useEffect(() => {
-    const handleUpdateAvailable = () => setUpdateAvailable(true);
+    const handleUpdateAvailable = (event) => {
+      if (event.data && event.data.type === "UPDATE_AVAILABLE") {
+        setUpdateAvailable(true);
+      }
+    };
 
-    window.addEventListener("updateAvailable", handleUpdateAvailable);
+    navigator.serviceWorker.addEventListener("message", handleUpdateAvailable);
 
     // Check for updates when the component mounts
     if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
@@ -16,15 +20,33 @@ function UpdateHandler() {
       });
     }
 
+    // Check for updates when the page becomes visible
+    document.addEventListener("visibilitychange", () => {
+      if (
+        !document.hidden &&
+        "serviceWorker" in navigator &&
+        navigator.serviceWorker.controller
+      ) {
+        navigator.serviceWorker.controller.postMessage({
+          type: "CHECK_FOR_UPDATES",
+        });
+      }
+    });
+
     return () => {
-      window.removeEventListener("updateAvailable", handleUpdateAvailable);
+      navigator.serviceWorker.removeEventListener(
+        "message",
+        handleUpdateAvailable
+      );
     };
   }, []);
 
   const applyUpdate = () => {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.ready.then((registration) => {
-        registration.waiting.postMessage({ type: "SKIP_WAITING" });
+        if (registration.waiting) {
+          registration.waiting.postMessage({ type: "SKIP_WAITING" });
+        }
       });
     }
   };

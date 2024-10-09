@@ -55,6 +55,10 @@ async function updateFiles() {
 
     await updateFile(packageLockPath, (packageLockJson) => {
       packageLockJson.version = versionString;
+      // Update the nested version
+      if (packageLockJson.packages && packageLockJson.packages[""]) {
+        packageLockJson.packages[""].version = versionString;
+      }
       return packageLockJson;
     });
 

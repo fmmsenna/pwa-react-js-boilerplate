@@ -1,12 +1,18 @@
 import React from "react";
+import "../styles/UpdateNotification.css";
 
 function UpdateNotification({ updateAvailable, onUpdate }) {
   if (!updateAvailable) return null;
 
   return (
-    <div className="update-notification">
-      <p>A new version is available. The app needs to update to continue.</p>
-      <button onClick={onUpdate}>Update Now</button>
+    <div className="update-notification-overlay">
+      <div className="update-notification-content">
+        <h2>Update Available</h2>
+        <p>A new version of the app is ready. Please update to continue.</p>
+        <button onClick={onUpdate} className="update-button">
+          Update Now
+        </button>
+      </div>
     </div>
   );
 }
